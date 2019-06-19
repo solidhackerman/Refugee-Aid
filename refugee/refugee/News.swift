@@ -1,10 +1,4 @@
-//
-//  News.swift
-//  refugee
-//
-//  Created by admin on 03/06/19.
-//  Copyright © 2019 ACE. All rights reserved.
-//
+// Shows all the news channels
 
 import UIKit
 

@@ -1,10 +1,4 @@
-//
-//  NGOMapViewController.swift
-//  refugee
-//
-//  Created by admin on 06/06/19.
-//  Copyright © 2019 ACE. All rights reserved.
-//
+// User can Search custom locations of his/her choice
 
 import UIKit
 import MapKit
@@ -83,12 +77,6 @@ class NGOMapViewController: UIViewController, UISearchBarDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        locationManager.requestWhenInUseAuthorization()
-//        ngoMap.showsUserLocation = true
-//
-//        let eiffel = Destination(title: "Eiffel Tower", subtitle: "Located in Paris", coordinate: CLLocationCoordinate2DMake(48.8584, 2.2945))
-//        ngoMap.addAnnotation(eiffel)
-
     }
     
 
@@ -96,16 +84,3 @@ class NGOMapViewController: UIViewController, UISearchBarDelegate {
 
 }
 
-//class Destination: NSObject, MKAnnotation {
-//    var coordinate: CLLocationCoordinate2D
-//    var title: String?
-//    var subtitle: String?
-//    
-//    init(title: String, subtitle: String, coordinate: CLLocationCoordinate2D) {
-//        self.title = title
-//        self.subtitle = subtitle
-//        self.coordinate = coordinate
-//    }
-//    
-//    
-//}

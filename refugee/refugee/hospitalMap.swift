@@ -1,14 +1,10 @@
-//
-//  hospitalMap.swift
-//  refugee
-//
-//  Created by admin on 07/06/19.
-//  Copyright © 2019 ACE. All rights reserved.
-//
+// This shows all the locations of hospitals, markets, and NGOs in Metro cities of India. Also shows the locations of registered NGOs all over the world.
+
 
 import UIKit
 import MapKit
 import CoreLocation
+import CoreData
 
 class hospitalMap: UIViewController {
 
@@ -28,12 +24,21 @@ class hospitalMap: UIViewController {
         goButton.layer.cornerRadius = goButton.frame.size.height/2
         checkLocationServices()
         mapView.showsUserLocation = true
-        
-        loadNGOs()
-        loadHospitals()
-        loadMarket()
+       if (checkCondition == 1) { // checks whether to show ngo or pre-located locations
+            checkCondition = 0
+            print("Value in if \(checkCondition)")
+            retData()
+        } else if(checkCondition == 0){
+            print("Value in else if \(checkCondition)")
+            loadNGOs()
+            loadHospitals()
+            loadMarket()
+        } else {
+         print("Error")
+        }
     }
     
+    //  Loads all the hospitals
     func loadHospitals() {
         let madanMohan = hospitalDestination(title: "Madan Mohan Hospital", subtitle: "Located in Delhi", coordinate: CLLocationCoordinate2DMake(28.328, 77.1250))
         mapView.addAnnotation(madanMohan)
@@ -72,7 +77,8 @@ class hospitalMap: UIViewController {
         mapView.addAnnotation(victoria)
         
     }
-    
+
+// Loads all the markets
     func loadMarket() {
         let connaught = marketDestination(title: "Connaught Market", subtitle: "Located in Delhi", coordinate: CLLocationCoordinate2DMake(28.6304, 77.2177))
         mapView.addAnnotation(connaught)
@@ -112,6 +118,7 @@ class hospitalMap: UIViewController {
         
     }
     
+    //  Loads all the NGOs
     func loadNGOs() {
         let lucknowNGO = NGODestination(title: "Aadarsh Gramin Sewa Sansthan", subtitle: "Located in Lucknow", coordinate: CLLocationCoordinate2DMake(26.879129, 81.040222))
         mapView.addAnnotation(lucknowNGO)
@@ -129,11 +136,43 @@ class hospitalMap: UIViewController {
         mapView.addAnnotation(mumbaiNGO)
     }
     
+    //  Loads the registered NGO searched by user
+    func retData() {
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "NGO_Info")
+        
+        request.returnsObjectsAsFaults = false
+        do {
+            let result = try context.fetch(request)
+            var temp = 0
+            for data in result as! [NSManagedObject] {
+                if(temp == globalIndex)
+                {
+                    let latitude = data.value(forKey: "lat") as! Double
+                    let longitude = data.value(forKey: "long") as! Double
+                    let ngoName = data.value(forKey: "name") as! String
+                    let newCoordinate = NGODestination(title: ngoName, subtitle: "", coordinate: CLLocationCoordinate2DMake(latitude, longitude))
+                    mapView.addAnnotation(newCoordinate)
+                    
+                }
+                temp = temp + 1
+            }
+            
+        } catch {
+            
+            print("Failed")
+        }
+    }
+    
+    // Sets up the Map
     func setupLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
+    // Zooms in to the user current location
     func centerViewOnUserLocation() {
         if let location = locationManager.location?.coordinate {
             let region = MKCoordinateRegion.init(center: location, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
@@ -141,6 +180,7 @@ class hospitalMap: UIViewController {
         }
     }
     
+    //Checks if the map view services are loaded or not
     func checkLocationServices() {
         if CLLocationManager.locationServicesEnabled() {
             setupLocationManager()
@@ -150,6 +190,8 @@ class hospitalMap: UIViewController {
         }
     }
     
+    
+    //Checks the location authorization of Map
     func checkLocationAuthorization() {
         switch CLLocationManager.authorizationStatus() {
         case .authorizedWhenInUse:
@@ -167,6 +209,7 @@ class hospitalMap: UIViewController {
         }
     }
     
+    //Moves the marker as the user moves
     func startTackingUserLocation() {
         mapView.showsUserLocation = true
         centerViewOnUserLocation()
@@ -174,6 +217,7 @@ class hospitalMap: UIViewController {
         previousLocation = getCenterLocation(for: mapView)
     }
     
+    // Gets the coordinates of the pin
     func getCenterLocation(for mapView: MKMapView) -> CLLocation {
         let latitude = mapView.centerCoordinate.latitude
         let longitude = mapView.centerCoordinate.longitude
@@ -181,6 +225,7 @@ class hospitalMap: UIViewController {
         return CLLocation(latitude: latitude, longitude: longitude)
     }
     
+    // Shows the direction from user's current location to pinpoint direction
     func getDirections() {
         guard let location = locationManager.location?.coordinate else {
             //TODO: Inform user we don't have their current location
@@ -202,6 +247,7 @@ class hospitalMap: UIViewController {
         }
     }
     
+    // Gets the request from Mapkit to show direction
     func createDirectionsRequest(from coordinate: CLLocationCoordinate2D) -> MKDirections.Request {
         let destinationCoordinate       = getCenterLocation(for: mapView).coordinate
         let startingLocation            = MKPlacemark(coordinate: coordinate)
@@ -216,19 +262,23 @@ class hospitalMap: UIViewController {
         return request
     }
     
+    
+    // Resets direction when destination is changed
     func resetMapView(withNew directions: MKDirections) {
         mapView.removeOverlays(mapView.overlays)
         directionsArray.append(directions)
         let _ = directionsArray.map { $0.cancel() }
     }
     
-    
+    // Go button
     @IBAction func goButtonTapped(_ sender: UIButton) {
         getDirections()
     }
 
 }
 
+
+// NGO class
 class NGODestination: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
     var title: String?
@@ -241,6 +291,8 @@ class NGODestination: NSObject, MKAnnotation {
     }
 }
 
+
+// Hospital class
 class hospitalDestination: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
     var title: String?
@@ -253,6 +305,8 @@ class hospitalDestination: NSObject, MKAnnotation {
     }
 }
 
+
+// market class
 class marketDestination: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
     var title: String?

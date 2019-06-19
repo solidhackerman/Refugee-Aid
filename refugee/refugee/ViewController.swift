@@ -8,6 +8,8 @@
 
 import UIKit
 
+var map: String = ""
+
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
